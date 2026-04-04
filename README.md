@@ -140,41 +140,6 @@ After deployment:
 - Docs: `https://sudipta02-email-triage-env.hf.space/docs`
 - Health: `https://sudipta02-email-triage-env.hf.space/health`
 
-## Baseline Inference (OpenAI)
-
-The baseline uses OpenAI Chat Completions and reads credentials from `OPENAI_API_KEY`.
-
-```bash
-cd envs/email_triage_env
-python baseline_openai.py --base-url http://localhost:8000 --model gpt-4o-mini --seed 7
-```
-
-Expected output schema:
-
-```json
-{
-  "model": "gpt-4o-mini",
-  "scores": {
-    "easy_security_triage": 0.0,
-    "medium_billing_outage": 0.0,
-    "hard_vip_legal_security": 0.0
-  },
-  "average": 0.0
-}
-```
-
-## Baseline Score Tracking
-
-Populate this table from `baseline_openai.py` runs:
-
-| Model | Easy | Medium | Hard | Average | Seed |
-|---|---:|---:|---:|---:|---:|
-| gpt-4o-mini | pending | pending | pending | pending | 7 |
-
-Current status in this workspace:
-- `baseline_openai.py` is implemented and reproducible.
-- `OPENAI_API_KEY` was not set during this session, so baseline scores have not been recorded yet.
-
 ## Validation
 
 ```bash
