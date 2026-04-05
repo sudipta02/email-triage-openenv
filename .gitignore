@@ -91,7 +91,6 @@ ehthumbs.db
 Desktop.ini
 
 # Docker
-/.dockerignore
 
 # Claude Code - exclude personal/temporary files, allow shared workflow files
 .claude/settings.local.json

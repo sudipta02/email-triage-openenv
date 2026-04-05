@@ -1,0 +1,12 @@
+.git
+.gitignore
+.gitattributes
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.pytest_cache
+.mypy_cache
+openenv_email_triage_env.egg-info

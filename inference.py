@@ -3,7 +3,7 @@
 Required environment variables:
 - API_BASE_URL: LLM endpoint for OpenAI-compatible chat completions.
 - MODEL_NAME: Model identifier used for inference.
-- HF_TOKEN: API key/token used by the OpenAI client.
+- HF_TOKEN or OPENAI_API_KEY: API key/token used by the OpenAI client.
 """
 
 from __future__ import annotations
@@ -41,11 +41,11 @@ TASK_IDS: List[str] = [
 ]
 
 
-def _required_env(name: str) -> str:
-    value = os.getenv(name)
-    if not value:
-        raise SystemExit(f"{name} is required.")
-    return value
+def _required_token() -> str:
+    token = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
+    if not token:
+        raise SystemExit("HF_TOKEN or OPENAI_API_KEY is required.")
+    return token
 
 
 def build_prompt(observation: Dict[str, Any]) -> str:
@@ -114,9 +114,9 @@ def main() -> None:
 
     api_base_url = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
     model_name = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
-    hf_token = _required_env("HF_TOKEN")
+    api_token = _required_token()
 
-    client = OpenAI(base_url=api_base_url, api_key=hf_token)
+    client = OpenAI(base_url=api_base_url, api_key=api_token)
 
     scores: Dict[str, float] = {}
     with EmailTriageEnv(base_url=args.env_url).sync() as env:
