@@ -48,6 +48,14 @@ def _required_token() -> str:
     return token
 
 
+def _env_or_default(name: str, default: str) -> str:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    cleaned = value.strip()
+    return cleaned if cleaned else default
+
+
 def build_prompt(observation: Dict[str, Any]) -> str:
     return (
         "You are an email operations triage agent. Return ONLY valid JSON with keys: "
@@ -64,21 +72,24 @@ def build_prompt(observation: Dict[str, Any]) -> str:
 
 
 def llm_action(client: OpenAI, model: str, observation: Dict[str, Any]) -> Any:
-    completion = client.chat.completions.create(
-        model=model,
-        temperature=0.0,
-        response_format={"type": "json_object"},
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "Choose one triage action that maximizes checklist completion and "
-                    "avoids invalid actions."
-                ),
-            },
-            {"role": "user", "content": build_prompt(observation)},
-        ],
-    )
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            temperature=0.0,
+            response_format={"type": "json_object"},
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Choose one triage action that maximizes checklist completion and "
+                        "avoids invalid actions."
+                    ),
+                },
+                {"role": "user", "content": build_prompt(observation)},
+            ],
+        )
+    except Exception:
+        return EmailTriageAction(action_type="noop")
 
     text = completion.choices[0].message.content or "{}"
     try:
@@ -100,9 +111,14 @@ def run_task(
     seed: int,
 ) -> float:
     result = env.reset(task_id=task_id, seed=seed)
+    safety_steps = int(result.observation.max_steps) + 2
+    steps = 0
     while not result.done:
         action = llm_action(client, model, result.observation.model_dump())
         result = env.step(action)
+        steps += 1
+        if steps >= safety_steps:
+            break
     return float(result.observation.score)
 
 
@@ -112,8 +128,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=7)
     args = parser.parse_args()
 
-    api_base_url = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-    model_name = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
+    api_base_url = _env_or_default("API_BASE_URL", "https://router.huggingface.co/v1")
+    model_name = _env_or_default("MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
     api_token = _required_token()
 
     client = OpenAI(base_url=api_base_url, api_key=api_token)
@@ -133,4 +149,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception as exc:
+        print(json.dumps({"error": str(exc)}))
+        raise SystemExit(1)
