@@ -6,6 +6,9 @@ from typing import Dict, Set, Tuple
 from .tasks import TriageTask
 
 
+_SCORE_EPSILON = 1e-6
+
+
 @dataclass
 class GradeResult:
     completed_keys: Set[str]
@@ -38,7 +41,13 @@ def grade_task(
     prev_score = sum(item.weight for item in task.checklist if item.key in previous_completed)
     delta = max(0.0, total_score - prev_score)
 
-    return GradeResult(completed_keys=completed, score=total_score, new_credit=delta)
+    # Keep trajectory reward on the raw weighted scale, but expose observation
+    # scores strictly inside (0, 1) for validator compatibility.
+    total_weight = sum(item.weight for item in task.checklist)
+    normalized = (total_score / total_weight) if total_weight > 0 else 0.0
+    bounded_score = _SCORE_EPSILON + (1.0 - (2.0 * _SCORE_EPSILON)) * normalized
+
+    return GradeResult(completed_keys=completed, score=bounded_score, new_credit=delta)
 
 
 def expected_values_for_email(task: TriageTask, email_id: str) -> Dict[str, object]:
