@@ -113,13 +113,28 @@ def run_task(
     result = env.reset(task_id=task_id, seed=seed)
     safety_steps = int(result.observation.max_steps) + 2
     steps = 0
+    
+    # Print START block
+    print(f"[START] task={task_id}", flush=True)
+    
     while not result.done:
         action = llm_action(client, model, result.observation.model_dump())
         result = env.step(action)
         steps += 1
+        
+        # Print STEP block with current reward (score)
+        current_reward = float(result.observation.score)
+        print(f"[STEP] step={steps} reward={current_reward}", flush=True)
+        
         if steps >= safety_steps:
             break
-    return float(result.observation.score)
+    
+    final_score = float(result.observation.score)
+    
+    # Print END block
+    print(f"[END] task={task_id} score={final_score} steps={steps}", flush=True)
+    
+    return final_score
 
 
 def main() -> None:
