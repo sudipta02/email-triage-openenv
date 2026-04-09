@@ -6,7 +6,7 @@ from typing import Dict, Set, Tuple
 from .tasks import TriageTask
 
 
-_SCORE_EPSILON = 1e-6
+_SCORE_EPSILON = 0.01
 
 
 @dataclass
