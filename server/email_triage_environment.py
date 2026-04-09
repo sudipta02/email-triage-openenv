@@ -18,10 +18,10 @@ except ImportError:
     from models import ChecklistItemStatus, EmailItem, EmailTriageAction, EmailTriageObservation, EmailTriageState
 
 try:
-    from .grader import grade_task, is_wrong_update, summarize_progress
+    from .grader import grade_task, is_wrong_update, minimum_bounded_score, summarize_progress
     from .tasks import TASKS, TriageTask, get_task, get_task_ids
 except ImportError:
-    from server.grader import grade_task, is_wrong_update, summarize_progress
+    from server.grader import grade_task, is_wrong_update, minimum_bounded_score, summarize_progress
     from server.tasks import TASKS, TriageTask, get_task, get_task_ids
 
 
@@ -64,7 +64,7 @@ class EmailTriageEnvironment(Environment[EmailTriageAction, EmailTriageObservati
             task_id=self._task.task_id,
             difficulty=self._task.difficulty,
             objective=self._task.objective,
-            score=0.0,
+            score=minimum_bounded_score(),
             completed_items=0,
             total_items=len(self._task.checklist),
             invalid_actions=0,

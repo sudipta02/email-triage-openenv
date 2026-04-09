@@ -50,6 +50,10 @@ def grade_task(
     return GradeResult(completed_keys=completed, score=bounded_score, new_credit=delta)
 
 
+def minimum_bounded_score() -> float:
+    return _SCORE_EPSILON
+
+
 def expected_values_for_email(task: TriageTask, email_id: str) -> Dict[str, object]:
     expected: Dict[str, object] = {}
     for item in task.checklist:
