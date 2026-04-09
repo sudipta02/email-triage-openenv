@@ -40,6 +40,8 @@ TASK_IDS: List[str] = [
     "hard_vip_legal_security",
 ]
 
+_SCORE_EPSILON = 1e-6
+
 
 def _required_token() -> str:
     token = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY")
@@ -54,6 +56,10 @@ def _env_or_default(name: str, default: str) -> str:
         return default
     cleaned = value.strip()
     return cleaned if cleaned else default
+
+
+def _bounded_score(score: float) -> float:
+    return max(_SCORE_EPSILON, min(score, 1.0 - _SCORE_EPSILON))
 
 
 def build_prompt(observation: Dict[str, Any]) -> str:
@@ -122,14 +128,14 @@ def run_task(
         result = env.step(action)
         steps += 1
         
-        # Print STEP block with current reward (score)
-        current_reward = float(result.observation.score)
-        print(f"[STEP] step={steps} reward={current_reward}", flush=True)
+        current_reward = float(result.reward or 0.0)
+        current_score = _bounded_score(float(result.observation.score))
+        print(f"[STEP] step={steps} reward={current_reward} score={current_score}", flush=True)
         
         if steps >= safety_steps:
             break
     
-    final_score = float(result.observation.score)
+    final_score = _bounded_score(float(result.observation.score))
     
     # Print END block
     print(f"[END] task={task_id} score={final_score} steps={steps}", flush=True)
