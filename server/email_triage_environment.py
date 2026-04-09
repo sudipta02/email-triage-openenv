@@ -36,7 +36,7 @@ class EmailTriageEnvironment(Environment[EmailTriageAction, EmailTriageObservati
         self._default_task_id = default_task_id
         self._task: TriageTask = get_task(default_task_id) if default_task_id else get_task(get_task_ids()[0])
         self._completed_keys: Set[str] = set()
-        self._state = EmailTriageState()
+        self._state = EmailTriageState(score=minimum_bounded_score())
         self._inbox_by_id: Dict[str, Dict[str, Any]] = {}
         self._last_feedback = ""
 
