@@ -115,7 +115,7 @@ class EmailTriageEnvironment(Environment[EmailTriageAction, EmailTriageObservati
 
         reward = grade.new_credit + penalty
 
-        if self._state.score >= 0.999:
+        if self._state.score >= 0.98:
             done = True
             completion_bonus = 0.20
             reward += completion_bonus

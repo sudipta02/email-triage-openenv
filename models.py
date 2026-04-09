@@ -61,7 +61,7 @@ class EmailTriageObservation(Observation):
     max_steps: int
     inbox: List[EmailItem] = Field(default_factory=list)
     checklist: List[ChecklistItemStatus] = Field(default_factory=list)
-    score: float = 1e-6
+    score: float = 0.01
     invalid_actions: int = 0
     last_feedback: str = ""
 
@@ -70,7 +70,7 @@ class EmailTriageState(State):
     task_id: str = ""
     difficulty: str = "easy"
     objective: str = ""
-    score: float = 1e-6
+    score: float = 0.01
     completed_items: int = 0
     total_items: int = 0
     invalid_actions: int = 0
